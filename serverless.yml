@@ -37,18 +37,6 @@ provider:
   stackTags:
     Git Repository: aws-lambda-cognito-api-gateway
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  patterns:
-#    - '!exclude-me.py'
-#    - '!exclude-me-dir/**'
-#    - include-me.py
-#    - include-me-dir/**
-
 functions:
   hello:
     handler: handler.hello
@@ -60,6 +48,33 @@ functions:
     events:
       - http:
           path: /user/signup
+          method: post
+          cors: true
+          integration: lambda
+          request:
+            template:
+              application/json: >
+                #set($body = $input.json("$"))
+                {"body": $body}
+            passThrough: WHEN_NO_TEMPLATES
+          response:
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+            statusCodes:
+              400:
+                pattern: '.*wrong.*'
+                template:
+                  application/json: >
+                    #set ($errorMessageObj = $input.path('$.errorMessage'))
+                    $errorMessageObj
+    
+  login:
+    handler: login/lambda_function.handler
+    name: ${self:provider.stage}-login-lambda
+    timeout: 30
+    events:
+      - http:
+          path: /user/login
           method: post
           cors: true
           integration: lambda
