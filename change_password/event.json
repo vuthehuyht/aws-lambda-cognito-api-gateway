@@ -1,0 +1,7 @@
+{
+    "body": {
+        "access_token": "access_token",
+        "old_password": "old_password",
+        "new_password": "new_password"
+    }
+}
