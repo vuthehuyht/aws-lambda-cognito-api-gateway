@@ -95,18 +95,29 @@ functions:
                     #set ($errorMessageObj = $input.path('$.errorMessage'))
                     $errorMessageObj
 
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+  change_password:
+    handler: change_password/lambda_function.handler
+    name: ${self:provider.stage}-change_password-lambda
+    timeout: 30
+    events:
+      - http:
+          path: /user/change_password
+          method: post
+          cors: true
+          integration: lambda
+          request:
+            template:
+              application/json: >
+                #set($body = $input.json("$"))
+                {"body": $body}
+            passThrough: WHEN_NO_TEMPLATES
+          response:
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+            statusCodes:
+              400:
+                pattern: '.*wrong.*'
+                template:
+                  application/json: >
+                    #set ($errorMessageObj = $input.path('$.errorMessage'))
+                    $errorMessageObj
